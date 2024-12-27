@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css">
+    <title>Weather App</title>
+    
+</head>
+<body>
+
+    <div class="main-container">
+        <h1>Thông Tin Thời Tiết</h1>
+        <div class="container">
+            <img src="./image/weather.jpg" id="weatherImg" alt="Hình ảnh thời tiết">
+            
+            <div id="weather">
+                <input type="text" id="city" placeholder="Nhập tên thành phố" />
+                <button onclick="getWeather()">Lấy Thông Tin</button>
+    
+                <p id="cityName"></p>
+                <p id="temperature"></p>
+                <p id="description"></p>
+                <p id="humidity"></p>
+                <p id="wind"></p>
+            </div>
+        </div>
+    
+        <div id="forecast-container">
+            <h2>Dự báo thời tiết</h2>
+            <div id="forecastDetails"></div>
+        </div>
+    </div>
+    
+    
+    <script>
+        // Hàm lấy thông tin thời tiết từ WeatherAPI
+       
+        async function getWeather() {
+            const apiKey = "d12b257ef00b4a02a6d52636242712";
+            const city = document.getElementById("city").value;
+            const encodedCity = encodeURIComponent(city);
+        
+            const weatherUrl = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${encodedCity}&days=3&aqi=no&alerts=no`;
+        
+            try {
+                const response = await fetch(weatherUrl);
+                const data = await response.json();
+        
+                if (data.error) {
+                    alert(`Không tìm thấy thành phố này: ${data.error.message}`);
+                    return;
+                }
+        
+                // Hiển thị thông tin hiện tại
+                const cityName = data.location.name;
+                const temperature = data.current.temp_c + "°C";
+                const description = data.current.condition.text;
+                const humidity = "Độ ẩm: " + data.current.humidity + "%";
+                const wind = "Tốc độ gió: " + data.current.wind_kph + " km/h";
+        
+                document.getElementById("cityName").textContent = "Thành phố: " + cityName;
+                document.getElementById("temperature").textContent = "Nhiệt độ: " + temperature;
+                document.getElementById("description").textContent = "Miêu tả: " + description;
+                document.getElementById("humidity").textContent = humidity;
+                document.getElementById("wind").textContent = wind;
+        
+                // Hiển thị dự báo thời tiết
+                const forecastDetails = document.getElementById("forecastDetails");
+                forecastDetails.innerHTML = ""; // Xóa dữ liệu cũ
+        
+                data.forecast.forecastday.forEach(day => {
+                    const forecastDate = day.date;
+                    const forecastTemp = day.day.avgtemp_c + "°C";
+                    const forecastCondition = day.day.condition.text;
+                    const forecastIcon = day.day.condition.icon;
+        
+                    const forecastHTML = `
+                        <div class="forecast-day">
+                            <h3>${forecastDate}</h3>
+                            <img src="https:${forecastIcon}" alt="${forecastCondition}">
+                            <p>${forecastCondition}</p>
+                            <p>Nhiệt độ trung bình: ${forecastTemp}</p>
+                        </div>
+                    `;
+                    forecastDetails.innerHTML += forecastHTML;
+                });
+        
+            } catch (error) {
+                alert("Đã có lỗi xảy ra khi truy xuất dữ liệu thời tiết.");
+                console.error(error);
+            }
+        }
+        
+    </script>
+
+</body>
+
+</html>
